@@ -9,7 +9,7 @@ var createUserControllerFunc = async (req, res) =>  {
     if (status) {
         res.send({ "status": true, "message": "Usuario creado" });
     } else {
-        res.send({ "status": false, "message": "Error creando usuario" });
+        res.send({ "status": false, "message": "Error creando usuario talvez ya existe" });
     }
     }
     catch(err) {
@@ -63,17 +63,37 @@ var oneUSerControllerFunc = async(req, res) => {
 }
 
 var deleteUserControllerFunc = async(req, res) => {
+    var gmail = null;
     try {
-      var id = req.params.id;
-      var result = await userService.deleteUserDBService(id);
-      if (result) {
-        res.send({ "status": true, "message": result.msg });
-      } else {
-        res.send({ "status": false, "message": result.msg });
-      }
+        gmail = await userService.deleteUserDBService(req.body);
+        if (gmail.status) {
+            res.send({ "status": true, "message": gmail.msg });
+        }
+        else {
+            res.send({ "status": false, "message": gmail.msg });
+        }
+
     } catch (error) {
-      console.log(error);
+        console.log(error);
+        res.send({ "status": false, "message": error.msg });
     }
   }
 
-module.exports = { createUserControllerFunc, loginUserControllerFunc, allUserControllerFunc, oneUSerControllerFunc, deleteUserControllerFunc };
+  var updateUserControllerFunc = async (req, res) =>{
+    try{
+        const userId = req.params.id;
+        const updateDats = req.body;
+        const result = await userService.updateUserDBService(userId,updateDats);
+        if (result){
+            res.send({"status": true, "message": "Se actualizo el usuario correctamente"})
+            console.log(result);
+        } else{
+            res.send({"status": false, "message": "si actualizar el usuario"})
+        }
+    } catch (error){
+        console.log(error)
+        res.send({"status": true, "message": "Se actualizo el usuario correctamente"})
+    }
+  }
+
+module.exports = { createUserControllerFunc, loginUserControllerFunc, allUserControllerFunc, oneUSerControllerFunc, deleteUserControllerFunc, updateUserControllerFunc };

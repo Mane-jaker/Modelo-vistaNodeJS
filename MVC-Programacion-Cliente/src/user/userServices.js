@@ -5,23 +5,32 @@ var encryptor = require('simple-encryptor')(key);
 module.exports.createUserDBService = (userDetails) => {
 
    return new Promise(function myFn(resolve, reject) {
-       var userModelData = new userModel();
+      userModel.findOne({email: userDetails.email}, function getresult(errorvalue, result){
+         if(errorvalue){
+            reject ({status: false, msg: "No se puede, ya existe"})
+         } else{
+            if(result != undefined && result != null){
+               resolve(false);
+            }else{
+               var userModelData = new userModel();
 
-       userModelData.firstname = userDetails.firstname;
-       userModelData.lastname = userDetails.lastname;
-       userModelData.email = userDetails.email;
-       userModelData.password = userDetails.password;
-       var encrypted = encryptor.encrypt(userDetails.password);
-       userModelData.password = encrypted;
+               userModelData.firstname = userDetails.firstname;
+               userModelData.lastname = userDetails.lastname;
+               userModelData.email = userDetails.email;
+               userModelData.password = userDetails.password;
+               var encrypted = encryptor.encrypt(userDetails.password);
+               userModelData.password = encrypted;
 
-       userModelData.save(function resultHandle(error, result) {
-
-           if (error) {
-               reject(false);
-           } else {
-               resolve(true);
-           }
-       });
+               userModelData.save(function resultHandle(error, result) {
+                  if (error) {
+                        reject(false);
+                  } else {
+                        resolve(true);
+                  }
+               });
+            }
+         }
+      })
    });
 }
 
@@ -83,14 +92,45 @@ module.exports.oneUserDBService = (id) => {
     });
 }
 
-module.exports.deleteUserDBService = (id) => {
-   return new Promise(function myFn(resolve, reject) {
-     userModel.deleteOne({ _id: id }, function deleteUser(errorvalue) {
-       if (errorvalue) {
-         reject({ status: false, msg: "Fallo al eliminar el usuario" });
-       } else {
-         resolve({ status: true, msg: "Usuario eliminado exitosamente" });
-       }
-     });
-   });
+module.exports.deleteUserDBService = (dats) => {
+   return new Promise( function myFn(resolve, reject){
+      userModel.findOneAndDelete({id: dats.id}, function getresult(errorgmail, gmail){
+         if(errorgmail){
+            reject({status: false, mgs:"Cuenta no existe"});
+         }
+         else{
+            if(gmail != undefined && gmail != null){
+               resolve({status: true, msg:"Cuenta eliminada"})
+            }
+            else{
+               reject({status:false, msg:"Cuenta no encotrada"});
+            }
+         }
+      })
+   })
  };
+
+ module.exports.updateUserDBService = (id, userDats) => {
+   return new Promise(function myFn(resolve, reject) {
+      userModel.findById(id, function findUser(errorvalue, user){
+         if (errorvalue){
+            reject({status: false, msg: "No se encontro el usuario"});
+         } else if (user){
+            user.firstname = userDats.firstname;
+            user.lastname = userDats.lastname;
+            user.email = userDats.email;
+            user.password = encryptor.encrypt(userDats.password);
+
+            user.save(function resultHandle(errorvalue){
+               if (errorvalue){
+                  reject({status: false, msg: "No se encontro el usuario"});
+               } else{
+                  reject({status: true, msg: "Se actualizo el usuario2"});
+               }
+            })
+         }else {
+            reject({status: false, msg: "No se encontro el usuario"});
+         }
+      })
+   })
+ }

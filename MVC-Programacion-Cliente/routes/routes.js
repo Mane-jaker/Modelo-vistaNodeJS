@@ -15,5 +15,7 @@ router.route('/user/search/:id').get(userController.oneUSerControllerFunc);
 
 router.route('/user/delete/:id').delete(userController.deleteUserControllerFunc);
 
+router.route('/user/update/:id').put(userController.updateUserControllerFunc)
+
 
 module.exports = router;
